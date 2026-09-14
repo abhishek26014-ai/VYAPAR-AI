@@ -1,7 +1,3 @@
-Got you. You want the entire README as ONE single copy-paste block, not split into separate code sections.
-
-Copy everything below into your README.md:
-
 # 🚀 VyaparAI
 
 ## Explainable AI-Powered Financial Early-Warning & Decision Support for MSMEs
