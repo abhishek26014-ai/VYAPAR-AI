@@ -1,454 +1,443 @@
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import {
-  LayoutDashboard,
   Activity,
   AlertTriangle,
-  TrendingUp,
-  SlidersHorizontal,
-  Wallet,
-  CheckCircle2,
-  AlertCircle,
-  FileWarning,
+  BarChart3,
+  Bell,
+  Bot,
+  BriefcaseBusiness,
+  CalendarDays,
+  ChevronDown,
+  CircleDollarSign,
+  CreditCard,
+  Database,
+  Gauge,
+  LayoutDashboard,
+  LineChart as LineChartIcon,
+  Menu,
+  MoreHorizontal,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Search,
+  Settings,
   ShieldAlert,
   Sparkles,
-  BarChart3,
-  Calendar,
-  FileText
+  TrendingDown,
+  TrendingUp,
+  WalletCards,
+  X,
+  Zap,
 } from "lucide-react";
 import {
-  AreaChart,
   Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip as RechartsTooltip,
-  ResponsiveContainer,
 } from "recharts";
+import "./index.css";
 
-const API = "https://vyaparai-fkhz.onrender.com";
+type RiskLevel = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 
-export default function App() {
-  const [activeTab, setActiveTab] = useState("dashboard");
-  const [dashboard, setDashboard] = useState(null);
-  const [forecastData, setForecastData] = useState([]);
-  const [loading, setLoading] = useState(true);
+type Business = {
+  name: string;
+  industry: string;
+  health: number;
+  risk: RiskLevel;
+  cash: number;
+  revenue: number;
+  expenses: number;
+  receivables: number;
+  payables: number;
+  debt: number;
+  margin: number;
+};
 
-  // Simulator levers
-  const [revChange, setRevChange] = useState(0);
-  const [expChange, setExpChange] = useState(0);
-  const [collectionChange, setCollectionChange] = useState(0);
-  const [simResult, setSimResult] = useState(null);
+const businesses: Business[] = [
+  {
+    name: "Sharma Wholesale",
+    industry: "FMCG Wholesale",
+    health: 82,
+    risk: "LOW",
+    cash: 780000,
+    revenue: 1180000,
+    expenses: 820000,
+    receivables: 560000,
+    payables: 320000,
+    debt: 280000,
+    margin: 22.7,
+  },
+  {
+    name: "Kumar Retail Hub",
+    industry: "Retail",
+    health: 64,
+    risk: "MEDIUM",
+    cash: 420000,
+    revenue: 890000,
+    expenses: 690000,
+    receivables: 410000,
+    payables: 360000,
+    debt: 450000,
+    margin: 13.4,
+  },
+  {
+    name: "Patel Services",
+    industry: "Professional Services",
+    health: 91,
+    risk: "LOW",
+    cash: 960000,
+    revenue: 1420000,
+    expenses: 890000,
+    receivables: 280000,
+    payables: 160000,
+    debt: 120000,
+    margin: 31.1,
+  },
+];
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+const cashFlow = [
+  { month: "Apr", inflow: 410, outflow: 280, net: 130 },
+  { month: "May", inflow: 450, outflow: 300, net: 150 },
+  { month: "Jun", inflow: 470, outflow: 340, net: 130 },
+  { month: "Jul", inflow: 520, outflow: 360, net: 160 },
+  { month: "Aug", inflow: 560, outflow: 370, net: 190 },
+  { month: "Sep", inflow: 620, outflow: 410, net: 210 },
+  { month: "Oct", inflow: 650, outflow: 430, net: 220 },
+];
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const [dashRes, foreRes] = await Promise.all([
-        fetch(`${API}/api/v1/dashboard/1`),
-        fetch(`${API}/api/v1/forecast/1`),
-      ]);
-      const dash = await dashRes.json();
-      const fore = await foreRes.json();
+const forecast = [
+  { month: "Oct", actual: 220, forecast: 220 },
+  { month: "Nov", actual: null, forecast: 238 },
+  { month: "Dec", actual: null, forecast: 242 },
+  { month: "Jan", actual: null, forecast: 228 },
+  { month: "Feb", actual: null, forecast: 210 },
+  { month: "Mar", actual: null, forecast: 206 },
+];
 
-      setDashboard(dash);
+const expenseBreakdown = [
+  { name: "Payroll", value: 320 },
+  { name: "Rent & Utilities", value: 180 },
+  { name: "Marketing", value: 150 },
+  { name: "Software", value: 90 },
+  { name: "Other", value: 240 },
+];
 
-      const chartPoints = [
-        ...(fore.historical || []).map((val, idx) => ({
-          month: `M${idx + 1}`,
-          cash: val,
-        })),
-        ...(fore.forecast_90 || []).map((val, idx) => ({
-          month: `M+${idx + 1}`,
-          cash: val,
-        })),
-      ];
-      setForecastData(chartPoints);
-    } catch (err) {
-      console.error("Fetch error:", err);
-    }
-    setLoading(false);
-  };
+const revenueTrend = [
+  { month: "Apr", value: 760 },
+  { month: "May", value: 810 },
+  { month: "Jun", value: 850 },
+  { month: "Jul", value: 940 },
+  { month: "Aug", value: 1030 },
+  { month: "Sep", value: 1090 },
+  { month: "Oct", value: 1180 },
+];
 
-  const handleSimulate = async () => {
-    try {
-      const res = await fetch(`${API}/api/v1/simulate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          revenue_change: revChange,
-          expense_change: expChange,
-          collection_change: collectionChange,
-          new_debt: 0,
-        }),
-      });
-      const data = await res.json();
-      setSimResult(data);
-    } catch (err) {
-      console.error("Simulation error:", err);
-    }
-  };
+const riskDrivers = [
+  { label: "Cash-flow stability", score: 89, color: "#0d8b62" },
+  { label: "Profitability", score: 84, color: "#11a36f" },
+  { label: "Receivables", score: 61, color: "#f4ad28" },
+  { label: "Debt burden", score: 67, color: "#f07c52" },
+  { label: "Expense control", score: 79, color: "#4f8df7" },
+];
 
-  useEffect(() => {
-    if (revChange !== 0 || expChange !== 0 || collectionChange !== 0) {
-      handleSimulate();
-    } else {
-      setSimResult(null);
-    }
-  }, [revChange, expChange, collectionChange]);
+const navItems = [
+  { label: "Overview", icon: LayoutDashboard },
+  { label: "Financial Health", icon: Gauge },
+  { label: "Risk Analysis", icon: ShieldAlert },
+  { label: "Cash Flow", icon: LineChartIcon },
+  { label: "Anomalies", icon: AlertTriangle },
+  { label: "AI Recommendations", icon: Sparkles },
+  { label: "What-If Simulator", icon: Zap },
+  { label: "Reports", icon: BarChart3 },
+];
 
-  const formatCurrency = (val) => `₹${Math.round(val || 0).toLocaleString()}`;
+const currency = (amount: number) =>
+  new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(amount);
 
-  if (loading || !dashboard) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 text-emerald-800 font-semibold">
-        Loading VyaparAI Engine...
-      </div>
+function App() {
+  const [selectedBusiness, setSelectedBusiness] = useState(0);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [activeNav, setActiveNav] = useState("Overview");
+  const [showBusinessMenu, setShowBusinessMenu] = useState(false);
+
+  const business = businesses[selectedBusiness];
+
+  const simulator = useMemo(() => {
+    const revenueFactor = 0.95;
+    const expenseFactor = 0.92;
+    const collectionBoost = 1.12;
+    const newRevenue = business.revenue * revenueFactor;
+    const newExpenses = business.expenses * expenseFactor;
+    const improvedCollections = business.receivables * collectionBoost;
+    const netImpact = (newRevenue - newExpenses) * 0.24 + improvedCollections * 0.08;
+    const simulatedHealth = Math.max(
+      0,
+      Math.min(100, Math.round(business.health + (netImpact > 0 ? 5 : -7)))
     );
-  }
-
-  const { business, health_score, risk, top_risks } = dashboard;
-
-  const navItems = [
-    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { id: "health", label: "Financial Health", icon: Activity },
-    { id: "risk", label: "Risk Analysis", icon: AlertTriangle },
-    { id: "forecast", label: "Cash Flow Forecast", icon: TrendingUp },
-    { id: "anomalies", label: "Anomalies", icon: ShieldAlert },
-    { id: "recommendations", label: "AI Recommendations", icon: Sparkles },
-    { id: "simulator", label: "What-If Simulator", icon: SlidersHorizontal },
-  ];
+    return {
+      revenue: newRevenue,
+      expenses: newExpenses,
+      health: simulatedHealth,
+      cash: business.cash + Math.round(netImpact),
+      risk: simulatedHealth >= 80 ? "LOW" : simulatedHealth >= 60 ? "MEDIUM" : "HIGH",
+    };
+  }, [business]);
 
   return (
-    <div className="min-h-screen flex bg-slate-50 text-slate-800">
-      {/* Sidebar */}
-      <aside className="w-64 bg-[#053b2b] text-white p-6 flex flex-col justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <Activity className="h-6 w-6 text-emerald-400" />
-            <h1 className="text-2xl font-bold tracking-tight">
-              Vyapar<span className="text-emerald-300">AI</span>
-            </h1>
-          </div>
-          <p className="text-xs text-emerald-100/70 mt-1">Financial Intelligence Platform</p>
-
-          <nav className="mt-8 space-y-1.5">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                    activeTab === item.id
-                      ? "bg-emerald-800/80 text-white shadow-sm font-semibold"
-                      : "text-emerald-100/80 hover:bg-emerald-800/30"
-                  }`}
-                >
-                  <Icon size={18} /> {item.label}
-                </button>
-              );
-            })}
-          </nav>
+    <div className="app-shell">
+      <aside className={`sidebar ${sidebarOpen ? "expanded" : "collapsed"} ${mobileOpen ? "mobile-visible" : ""}`}>
+        <div className="brand-row">
+          <div className="brand-mark"><span>V</span></div>
+          {sidebarOpen && (
+            <div>
+              <div className="brand-name">Vyapar<span>AI</span></div>
+              <div className="brand-sub">Financial Intelligence</div>
+            </div>
+          )}
+          {mobileOpen && (
+            <button className="icon-btn mobile-close" onClick={() => setMobileOpen(false)}><X size={18} /></button>
+          )}
         </div>
 
-        <div className="bg-[#03291e] p-3 rounded-lg text-xs text-emerald-200/80 border border-emerald-900/50">
-          <p className="font-semibold uppercase tracking-wider text-[10px] text-emerald-400">Target MSME</p>
-          <p className="mt-1 font-bold text-white">{business.name}</p>
-          <p>ID: #{business.id}</p>
+        <div className="workspace-card">
+          <div className="workspace-icon"><BriefcaseBusiness size={16} /></div>
+          {sidebarOpen && (
+            <div className="workspace-copy">
+              <span className="eyebrow">BUSINESS</span>
+              <strong>{business.name}</strong>
+              <small>{business.industry}</small>
+            </div>
+          )}
+          {sidebarOpen && <ChevronDown size={15} className="muted-icon" />}
+        </div>
+
+        <nav className="nav-list">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const active = activeNav === item.label;
+            return (
+              <button
+                key={item.label}
+                className={`nav-item ${active ? "active" : ""}`}
+                onClick={() => {
+                  setActiveNav(item.label);
+                  setMobileOpen(false);
+                }}
+                title={item.label}
+              >
+                <Icon size={18} />
+                {sidebarOpen && <span>{item.label}</span>}
+              </button>
+            );
+          })}
+        </nav>
+
+        <div className="sidebar-bottom">
+          <button className="nav-item"><Settings size={18} />{sidebarOpen && <span>Settings</span>}</button>
+          <div className="trust-chip">
+            <ShieldAlert size={15} />
+            {sidebarOpen && <span>Secure workspace</span>}
+          </div>
         </div>
       </aside>
 
-      {/* Main Panel */}
-      <main className="flex-1 p-8 overflow-y-auto">
-        <div className="flex justify-between items-center mb-8 border-b pb-4 border-slate-200">
-          <div>
-            <h2 className="text-2xl font-bold text-slate-900 capitalize">
-              {navItems.find((n) => n.id === activeTab)?.label || "Overview"}
-            </h2>
-            <p className="text-sm text-slate-500">Early-warning indicators and real-time business diagnostics</p>
-          </div>
-          <span className="bg-amber-100 border border-amber-300 text-amber-800 text-xs px-3 py-1 rounded-full font-semibold flex items-center gap-1">
-            <FileWarning size={14} /> Synthetic Demo Mode
-          </span>
-        </div>
+      {mobileOpen && <button className="mobile-backdrop" onClick={() => setMobileOpen(false)} aria-label="Close menu" />}
 
-        {/* DASHBOARD TAB */}
-        {activeTab === "dashboard" && (
-          <div className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
-              <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                <div className="text-xs font-semibold uppercase text-slate-500">Health Score</div>
-                <div className="mt-2 text-3xl font-extrabold text-emerald-600">
-                  {health_score} <span className="text-sm font-normal text-slate-400">/100</span>
-                </div>
-              </div>
-              <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm border-l-4 border-l-emerald-500">
-                <div className="text-xs font-semibold uppercase text-slate-500">Distress Risk</div>
-                <div className="mt-2 text-2xl font-extrabold text-emerald-700">{risk}</div>
-              </div>
-              <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                <div className="text-xs font-semibold uppercase text-slate-500">Cash Balance</div>
-                <div className="mt-2 text-2xl font-extrabold text-slate-900">{formatCurrency(business.cash_balance)}</div>
-              </div>
-              <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                <div className="text-xs font-semibold uppercase text-slate-500">Receivables</div>
-                <div className="mt-2 text-2xl font-extrabold text-slate-900">{formatCurrency(business.receivables)}</div>
-              </div>
+      <main className="main-shell">
+        <header className="topbar">
+          <div className="topbar-left">
+            <button className="mobile-menu-btn" onClick={() => setMobileOpen(true)}><Menu size={20} /></button>
+            <button className="collapse-btn" onClick={() => setSidebarOpen(v => !v)} title="Toggle sidebar">
+              {sidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
+            </button>
+            <div className="page-title-wrap">
+              <div className="page-kicker">BUSINESS OVERVIEW</div>
+              <h1>{activeNav}</h1>
             </div>
+          </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-emerald-600" /> Cash Flow Forecast (90 Days)
-                </h3>
-                <div className="h-64 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={forecastData}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                      <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                      <YAxis tickFormatter={(v) => `₹${v / 1000}k`} tick={{ fontSize: 12 }} />
-                      <RechartsTooltip formatter={(v) => formatCurrency(Number(v))} />
-                      <Area type="monotone" dataKey="cash" stroke="#10b981" fill="#ecfdf5" strokeWidth={2} />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
+          <div className="topbar-actions">
+            <div className="search-box">
+              <Search size={16} />
+              <input placeholder="Search insights..." />
+              <kbd>⌘ K</kbd>
+            </div>
+            <div className="period-pill"><CalendarDays size={15} /> May 1 – May 31, 2026 <ChevronDown size={14} /></div>
+            <button className="icon-btn"><Bell size={17} /></button>
+            <div className="avatar">A</div>
+          </div>
+        </header>
 
-              <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-                  <AlertCircle className="h-5 w-5 text-amber-600" /> Active Risk Warnings
-                </h3>
-                <div className="space-y-3">
-                  {top_risks.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-100 text-xs font-medium text-slate-700">
-                      <CheckCircle2 size={16} className="text-emerald-600 flex-shrink-0" />
-                      {item}
-                    </div>
+        <div className="content">
+          <section className="hero-row">
+            <div>
+              <div className="eyebrow green">GOOD MORNING</div>
+              <h2>Here’s your financial pulse.</h2>
+              <p>Track the signals that matter and act before a small warning becomes a bigger problem.</p>
+            </div>
+            <div className="business-switcher">
+              <button className="switcher-btn" onClick={() => setShowBusinessMenu(v => !v)}>
+                <span className="switcher-avatar">{business.name.charAt(0)}</span>
+                <span className="switcher-text"><strong>{business.name}</strong><small>{business.industry}</small></span>
+                <ChevronDown size={16} />
+              </button>
+              {showBusinessMenu && (
+                <div className="business-menu">
+                  {businesses.map((b, index) => (
+                    <button key={b.name} onClick={() => { setSelectedBusiness(index); setShowBusinessMenu(false); }}>
+                      <span className="switcher-avatar small">{b.name.charAt(0)}</span>
+                      <span><strong>{b.name}</strong><small>{b.industry}</small></span>
+                    </button>
                   ))}
                 </div>
-              </div>
+              )}
             </div>
-          </div>
-        )}
+          </section>
 
-        {/* FINANCIAL HEALTH TAB */}
-        {activeTab === "health" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm flex flex-col items-center justify-center text-center">
-              <div className="w-36 h-36 rounded-full border-8 border-emerald-500 flex items-center justify-center">
-                <span className="text-4xl font-extrabold text-emerald-700">{health_score}</span>
-              </div>
-              <h3 className="text-xl font-bold mt-4">Solvency Rating: Strong</h3>
-              <p className="text-sm text-slate-500 max-w-sm mt-1">Weighted metric evaluating liquidity runway, debt-to-revenue ratios, and margin coverage.</p>
+          <section className="metric-grid">
+            <div className="metric-card featured">
+              <div className="metric-top"><span>FINANCIAL HEALTH</span><div className="tiny-badge positive"><TrendingUp size={12} /> +6%</div></div>
+              <div className="metric-value-row"><strong>{business.health}</strong><span>/ 100</span></div>
+              <div className="health-ring-row"><div className="mini-ring" style={{"--progress": `${business.health * 3.6}deg`} as React.CSSProperties}><div>{business.health}%</div></div><div><strong>Healthy position</strong><small>Driven by stable cash flow and margins</small></div></div>
             </div>
-            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-              <h3 className="font-bold text-slate-900">Health Breakdown</h3>
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Operating Cash Ratio</span>
-                  <span className="font-semibold text-emerald-600">88%</span>
-                </div>
-                <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                  <div className="bg-emerald-500 h-full w-[88%]"></div>
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Receivable Collection Health</span>
-                  <span className="font-semibold text-amber-500">65%</span>
-                </div>
-                <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                  <div className="bg-amber-500 h-full w-[65%]"></div>
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Debt Coverage Ratio</span>
-                  <span className="font-semibold text-emerald-600">92%</span>
-                </div>
-                <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                  <div className="bg-emerald-500 h-full w-[92%]"></div>
-                </div>
-              </div>
+
+            <div className="metric-card">
+              <div className="metric-top"><span>CASH BALANCE</span><CircleDollarSign size={16} className="metric-icon green-icon" /></div>
+              <div className="metric-value">{currency(business.cash)}</div>
+              <div className="metric-foot"><span className="positive-text">+8.5%</span> vs previous month</div>
+              <div className="sparkline green-line"><span style={{height: "40%"}}/><span style={{height: "52%"}}/><span style={{height: "47%"}}/><span style={{height: "63%"}}/><span style={{height: "58%"}}/><span style={{height: "79%"}}/><span style={{height: "88%"}}/></div>
             </div>
-          </div>
-        )}
 
-        {/* RISK ANALYSIS TAB */}
-        {activeTab === "risk" && (
-          <div className="space-y-6">
-            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-              <h3 className="font-bold text-lg text-slate-900 mb-2">Random Forest Risk Classification</h3>
-              <p className="text-sm text-slate-500 mb-4">Probability of entering liquidity distress over the next 90 days.</p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
-                  <span className="text-xs text-emerald-800 font-semibold uppercase">30-Day Probability</span>
-                  <div className="text-2xl font-bold text-emerald-900 mt-1">8.2% (Low)</div>
-                </div>
-                <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg">
-                  <span className="text-xs text-slate-600 font-semibold uppercase">60-Day Probability</span>
-                  <div className="text-2xl font-bold text-slate-800 mt-1">14.1% (Low)</div>
-                </div>
-                <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                  <span className="text-xs text-amber-800 font-semibold uppercase">90-Day Probability</span>
-                  <div className="text-2xl font-bold text-amber-900 mt-1">21.5% (Moderate)</div>
-                </div>
-              </div>
+            <div className="metric-card">
+              <div className="metric-top"><span>RISK STATUS</span><ShieldAlert size={16} className="metric-icon" /></div>
+              <div className="risk-row"><div className={`risk-pill ${business.risk.toLowerCase()}`}><span />{business.risk}</div></div>
+              <div className="metric-foot">No critical warning detected</div>
+              <div className="risk-meter"><span className="low"/><span className="medium"/><span className="high"/><span className="critical"/><i style={{left: `${Math.min(93, Math.max(8, 100-business.health))}%`}}/></div>
             </div>
-          </div>
-        )}
 
-        {/* CASH FLOW FORECAST TAB */}
-        {activeTab === "forecast" && (
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-            <h3 className="font-bold text-lg text-slate-900 mb-4">Projected vs Historical Working Capital</h3>
-            <div className="h-80 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={forecastData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                  <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                  <YAxis tickFormatter={(v) => `₹${v / 1000}k`} tick={{ fontSize: 12 }} />
-                  <RechartsTooltip formatter={(v) => formatCurrency(Number(v))} />
-                  <Area type="monotone" dataKey="cash" stroke="#10b981" fill="#ecfdf5" strokeWidth={2} />
-                </AreaChart>
-              </ResponsiveContainer>
+            <div className="metric-card">
+              <div className="metric-top"><span>REVENUE</span><WalletCards size={16} className="metric-icon green-icon" /></div>
+              <div className="metric-value">{currency(business.revenue)}</div>
+              <div className="metric-foot"><span className="positive-text">+9.2%</span> growth this month</div>
+              <div className="sparkline blue-line"><span style={{height: "46%"}}/><span style={{height: "58%"}}/><span style={{height: "50%"}}/><span style={{height: "69%"}}/><span style={{height: "65%"}}/><span style={{height: "82%"}}/><span style={{height: "91%"}}/></div>
             </div>
-          </div>
-        )}
+          </section>
 
-        {/* ANOMALIES TAB */}
-        {activeTab === "anomalies" && (
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-            <h3 className="font-bold text-lg text-slate-900">Isolation Forest Outlier Detection</h3>
-            <div className="space-y-3">
-              <div className="p-4 bg-amber-50 rounded-lg border border-amber-200 flex justify-between items-center">
-                <div>
-                  <h4 className="font-bold text-amber-900 text-sm">Receivables Expansion Spurt</h4>
-                  <p className="text-xs text-amber-700 mt-0.5">Accounts receivable escalated 18% above typical 3-month variance.</p>
-                </div>
-                <span className="px-2.5 py-1 text-xs font-semibold bg-amber-200 text-amber-800 rounded">Moderate Alert</span>
+          <section className="chart-grid two-thirds">
+            <div className="panel large-panel">
+              <div className="panel-header">
+                <div><h3>Revenue trend</h3><p>Monthly revenue movement</p></div>
+                <button className="ghost-btn">Monthly <ChevronDown size={13} /></button>
               </div>
-              <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 flex justify-between items-center">
-                <div>
-                  <h4 className="font-bold text-slate-800 text-sm">Operating Discretionary Expenditure</h4>
-                  <p className="text-xs text-slate-500 mt-0.5">Recurring vendor outflows align within historical bounds.</p>
-                </div>
-                <span className="px-2.5 py-1 text-xs font-semibold bg-slate-200 text-slate-700 rounded">Normal Range</span>
-              </div>
+              <div className="chart-stat"><strong>{currency(business.revenue)}</strong><span className="positive-text"><TrendingUp size={14} /> 9.2% vs last month</span></div>
+              <div className="chart-area"><ResponsiveContainer width="100%" height="100%"><BarChart data={revenueTrend} margin={{top: 10,right: 10,left: -18,bottom: 0}}>
+                <CartesianGrid stroke="#edf3ef" vertical={false} />
+                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill:"#94a39a",fontSize:11}} />
+                <YAxis axisLine={false} tickLine={false} tick={{fill:"#94a39a",fontSize:11}} tickFormatter={(v)=>`₹${v/100}k`} />
+                <Tooltip formatter={(value: number) => [currency(value * 1000), "Revenue"]} cursor={{fill:"#f3f8f5"}} />
+                <Bar dataKey="value" radius={[7,7,2,2]} fill="#0d8b62" />
+              </BarChart></ResponsiveContainer></div>
             </div>
-          </div>
-        )}
 
-        {/* AI RECOMMENDATIONS TAB */}
-        {activeTab === "recommendations" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
-              <div>
-                <span className="px-2.5 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded">High Priority</span>
-                <h4 className="font-bold text-base text-slate-900 mt-3">Expedite Receivables Collections</h4>
-                <p className="text-sm text-slate-600 mt-2">
-                  Offer a 2% early settlement discount on invoices exceeding 30 days to free up liquid working capital.
-                </p>
+            <div className="panel">
+              <div className="panel-header">
+                <div><h3>Cash flow</h3><p>Inflow vs outflow</p></div>
+                <button className="more-btn"><MoreHorizontal size={18} /></button>
               </div>
-              <button onClick={() => setActiveTab("simulator")} className="mt-4 text-emerald-700 font-semibold text-sm hover:underline text-left">
-                Test in What-If Simulator →
-              </button>
+              <div className="chart-area compact"><ResponsiveContainer width="100%" height="100%"><AreaChart data={cashFlow} margin={{top: 15,right: 5,left: -18,bottom: 0}}>
+                <defs><linearGradient id="cashGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#0d8b62" stopOpacity={0.22}/><stop offset="100%" stopColor="#0d8b62" stopOpacity={0}/></linearGradient></defs>
+                <CartesianGrid stroke="#edf3ef" vertical={false} />
+                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill:"#94a39a",fontSize:10}} />
+                <YAxis axisLine={false} tickLine={false} tick={{fill:"#94a39a",fontSize:9}} tickFormatter={(v)=>`${v/100}k`} />
+                <Tooltip formatter={(value: number) => [`₹${value}k`, "Net cash"]} />
+                <Area type="monotone" dataKey="net" stroke="#0d8b62" strokeWidth={2.4} fill="url(#cashGradient)" />
+              </AreaChart></ResponsiveContainer></div>
+              <div className="chart-legend"><span><i className="dot green"/> Net cash</span><span><i className="dot gray"/> Baseline</span></div>
             </div>
-            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
-              <div>
-                <span className="px-2.5 py-1 text-xs font-semibold bg-emerald-100 text-emerald-800 rounded">Optimization</span>
-                <h4 className="font-bold text-base text-slate-900 mt-3">Reserve Buffering</h4>
-                <p className="text-sm text-slate-600 mt-2">
-                  Maintain current cash buffer of {formatCurrency(business.cash_balance)} to protect upcoming EMI commitments.
-                </p>
-              </div>
-              <button onClick={() => setActiveTab("simulator")} className="mt-4 text-emerald-700 font-semibold text-sm hover:underline text-left">
-                Test in What-If Simulator →
-              </button>
-            </div>
-          </div>
-        )}
+          </section>
 
-        {/* WHAT-IF SIMULATOR TAB */}
-        {activeTab === "simulator" && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
-              <h3 className="text-lg font-bold text-slate-800">Adjust Levers</h3>
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Revenue Change</span>
-                  <span className="font-bold text-emerald-600">{revChange > 0 ? `+${revChange}` : revChange}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="-30"
-                  max="30"
-                  value={revChange}
-                  onChange={(e) => setRevChange(Number(e.target.value))}
-                  className="w-full accent-emerald-600"
-                />
-              </div>
-
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Expense Change</span>
-                  <span className="font-bold text-red-500">{expChange > 0 ? `+${expChange}` : expChange}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="-30"
-                  max="30"
-                  value={expChange}
-                  onChange={(e) => setExpChange(Number(e.target.value))}
-                  className="w-full accent-red-500"
-                />
-              </div>
-
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Expedite Receivables Collection</span>
-                  <span className="font-bold text-emerald-600">+{collectionChange}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={collectionChange}
-                  onChange={(e) => setCollectionChange(Number(e.target.value))}
-                  className="w-full accent-emerald-600"
-                />
+          <section className="chart-grid three-col">
+            <div className="panel">
+              <div className="panel-header"><div><h3>Potential risks</h3><p>Signals needing attention</p></div><button className="more-btn"><MoreHorizontal size={18}/></button></div>
+              <div className="risk-list">
+                <div className="risk-item"><div className="risk-icon warning"><TrendingDown size={15}/></div><div><strong>Receivables growing</strong><small>+12.4% this month</small></div><span className="risk-score orange">61</span></div>
+                <div className="risk-item"><div className="risk-icon green"><Activity size={15}/></div><div><strong>Cash flow stable</strong><small>Positive for 5 weeks</small></div><span className="risk-score">89</span></div>
+                <div className="risk-item"><div className="risk-icon blue"><CreditCard size={15}/></div><div><strong>Debt manageable</strong><small>18.7% of revenue</small></div><span className="risk-score blue-score">82</span></div>
               </div>
             </div>
 
-            <div className="bg-slate-900 text-white p-8 rounded-xl flex flex-col justify-center gap-6">
-              <h3 className="text-xl font-bold">Simulated Recalculation</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <span className="text-xs text-slate-400 uppercase">Simulated Health</span>
-                  <div className="text-4xl font-extrabold text-emerald-400 mt-1">
-                    {simResult ? simResult.simulated.health_score : health_score}
+            <div className="panel">
+              <div className="panel-header"><div><h3>Expense mix</h3><p>Current monthly allocation</p></div><button className="more-btn"><MoreHorizontal size={18}/></button></div>
+              <div className="donut-wrap"><div className="donut"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={expenseBreakdown} dataKey="value" nameKey="name" innerRadius={48} outerRadius={68} paddingAngle={2}>{expenseBreakdown.map((_,i)=><Cell key={i} fill={["#0d8b62","#43aa7f","#f4ad28","#4f8df7","#bcc9c1"][i]} />)}</Pie></PieChart></ResponsiveContainer><div className="donut-center"><strong>₹980k</strong><small>Total</small></div></div>
+                <div className="legend-list">{expenseBreakdown.map((item,i)=><div key={item.name}><span><i style={{background:["#0d8b62","#43aa7f","#f4ad28","#4f8df7","#bcc9c1"][i]}}/>{item.name}</span><strong>{currency(item.value*1000)}</strong></div>)}</div></div>
+            </div>
+
+            <div className="panel">
+              <div className="panel-header"><div><h3>AI recommendations</h3><p>Based on current signals</p></div><div className="ai-chip"><Bot size={14}/> AI</div></div>
+              <div className="recommendations">
+                <div className="recommendation"><div className="rec-icon"><Sparkles size={15}/></div><div><strong>Accelerate collections</strong><small>Receivables are up 12.4%. Review overdue invoices and follow-up cadence.</small></div></div>
+                <div className="recommendation"><div className="rec-icon green-bg"><CircleDollarSign size={15}/></div><div><strong>Protect liquidity</strong><small>Maintain a buffer while the next 30-day cash cycle plays out.</small></div></div>
+                <div className="recommendation"><div className="rec-icon blue-bg"><Zap size={15}/></div><div><strong>Run a what-if check</strong><small>Test a 10–15% revenue drop before committing new spend.</small></div></div>
+              </div>
+            </div>
+          </section>
+
+          <section className="chart-grid two-col-bottom">
+            <div className="panel">
+              <div className="panel-header"><div><h3>30 / 60 / 90-day cash forecast</h3><p>Historical cash flow transitioning into forecast</p></div><div className="forecast-tag"><Activity size={14}/> Forecast</div></div>
+              <div className="chart-area forecast-area"><ResponsiveContainer width="100%" height="100%"><LineChart data={forecast} margin={{top:12,right:8,left:-18,bottom:0}}>
+                <CartesianGrid stroke="#edf3ef" vertical={false}/>
+                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill:"#94a39a",fontSize:10}}/>
+                <YAxis axisLine={false} tickLine={false} tick={{fill:"#94a39a",fontSize:9}}/>
+                <Tooltip/>
+                <Line type="monotone" dataKey="actual" stroke="#0d8b62" strokeWidth={3} dot={{r:3,fill:"#0d8b62"}} connectNulls={false}/>
+                <Line type="monotone" dataKey="forecast" stroke="#57b18e" strokeWidth={2.5} strokeDasharray="7 6" dot={false}/>
+              </LineChart></ResponsiveContainer></div>
+            </div>
+
+            <div className="panel">
+              <div className="panel-header"><div><h3>Financial health drivers</h3><p>Why the score is where it is</p></div><button className="ghost-btn">Details <ChevronDown size={13}/></button></div>
+              <div className="driver-list">
+                {riskDrivers.map((driver) => (
+                  <div className="driver-row" key={driver.label}>
+                    <div className="driver-label"><span>{driver.label}</span><strong>{driver.score}</strong></div>
+                    <div className="driver-track"><span style={{width:`${driver.score}%`,background:driver.color}} /></div>
                   </div>
-                </div>
-                <div>
-                  <span className="text-xs text-slate-400 uppercase">Simulated Risk</span>
-                  <div className="text-3xl font-extrabold text-white mt-1">
-                    {simResult ? simResult.simulated.risk : risk}
-                  </div>
-                </div>
-                <div className="col-span-2 pt-4 border-t border-slate-800">
-                  <span className="text-xs text-slate-400 uppercase">Projected Cash Balance</span>
-                  <div className="text-2xl font-bold text-slate-200 mt-1">
-                    {formatCurrency(simResult ? simResult.simulated.cash_balance : business.cash_balance)}
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
-          </div>
-        )}
+          </section>
+
+          <section className="simulator-banner">
+            <div className="simulator-copy"><div className="sim-icon"><Zap size={18}/></div><div><span className="eyebrow green">WHAT-IF SIMULATOR</span><h3>Test decisions before acting on them.</h3><p>Try revenue, expense and collection changes and instantly see the estimated impact on health, risk and cash.</p></div></div>
+            <div className="simulator-results">
+              <div><small>Health</small><strong>{simulator.health}</strong><span className="positive-text">/100</span></div>
+              <div><small>Risk</small><strong className="risk-text">{simulator.risk}</strong></div>
+              <div><small>Simulated cash</small><strong>{currency(simulator.cash)}</strong></div>
+              <button className="primary-btn">Open simulator <Zap size={15}/></button>
+            </div>
+          </section>
+
+          <div className="bottom-note"><Database size={13}/> Synthetic/demo values shown for illustration. Connect your backend API to populate real business data.</div>
+        </div>
       </main>
     </div>
   );
 }
+
+export default App;
