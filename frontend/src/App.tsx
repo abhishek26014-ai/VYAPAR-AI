@@ -1,3 +1,4 @@
+import './App.css';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import {
   Activity,
