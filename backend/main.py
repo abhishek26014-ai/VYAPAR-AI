@@ -1,15 +1,9 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Dict, Any
 
-app = FastAPI(
-    title="VyaparAI API",
-    description="AI-powered financial early-warning platform for MSMEs",
-    version="1.0.0"
-)
+app = FastAPI()
 
-# Allow React frontend to communicate with FastAPI
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -18,152 +12,81 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ---------------------------------------------------------
-# AUTHENTICATION ROUTES (Fixes the "Not Found" error)
-# ---------------------------------------------------------
-class RegisterReq(BaseModel):
-    full_name: str
-    business_name: str
-    phone: str = None
-    business_type: str = None
-    email: str
-    password: str
+# Mock Database for the Prototype
+db = {
+    "business": {
+        "id": 1, "user_id": 1, "name": "VyaparAI Workspace",
+        "business_type": "Retail", "industry": "Retail", "city": "Indore",
+        "monthly_revenue": 0, "monthly_expenses": 0, "current_cash": 0,
+        "receivables": 0, "payables": 0, "debt": 0, "employees": 0
+    },
+    "records": []
+}
 
+# Data Models
 class LoginReq(BaseModel):
     email: str
     password: str
 
-@app.post("/api/v1/register")
-def register(user: RegisterReq):
-    return {"token": "vyaparai-secure-token", "user": {"email": user.email, "name": user.full_name}}
+class RegisterReq(BaseModel):
+    full_name: str
+    business_name: str
+    email: str
+    phone: str = None
+    password: str
+    business_type: str = "Retail"
 
-@app.post("/api/v1/login")
-def login(user: LoginReq):
-    return {"token": "vyaparai-secure-token", "user": {"email": user.email}}
+# --- Authentication Routes ---
+@app.post("/api/auth/login")
+def login(req: LoginReq):
+    return {"access_token": "vyaparai-secure-token", "user": {"id": 1, "full_name": "Admin", "email": req.email}}
 
-# ---------------------------------------------------------
-# DEMO BUSINESS DATA
-# ---------------------------------------------------------
-business = {
-    "id": 1,
-    "name": "Demo MSME",
-    "revenue": 1000000,
-    "expenses": 600000,
-    "profit": 400000,
-    "cash_balance": 780000,
-    "receivables": 240000,
-    "payables": 90000,
-    "debt": 300000,
-    "emi": 25000,
-    "inventory": 180000,
-}
+@app.post("/api/auth/register")
+def register(req: RegisterReq):
+    db["business"]["name"] = req.business_name
+    db["business"]["industry"] = req.business_type
+    return {"access_token": "vyaparai-secure-token", "user": {"id": 1, "full_name": req.full_name, "email": req.email}}
 
-# ---------------------------------------------------------
-# FINANCIAL HEALTH SCORE
-# ---------------------------------------------------------
-def calculate_health_score(data: Dict[str, Any]) -> int:
-    score = 100
-    revenue = data["revenue"]
-    expenses = data["expenses"]
-    cash = data["cash_balance"]
-    receivables = data["receivables"]
-    debt = data["debt"]
-    emi = data["emi"]
+@app.get("/api/auth/me")
+def me():
+    return {"user": {"id": 1, "full_name": "Admin", "email": "admin@vyaparai.com"}, "business": db["business"]}
 
-    # Expense pressure
-    expense_ratio = expenses / max(revenue, 1)
-    if expense_ratio > 0.80: score -= 20
-    elif expense_ratio > 0.65: score -= 10
+@app.post("/api/auth/logout")
+def logout():
+    return {"message": "Logged out"}
 
-    # Cash reserves
-    if cash < expenses * 0.5: score -= 20
-    elif cash < expenses: score -= 10
+# --- Business Profile Routes ---
+@app.get("/api/business")
+def get_business():
+    return db["business"]
 
-    # Receivables pressure
-    receivable_ratio = receivables / max(revenue, 1)
-    if receivable_ratio > 0.35: score -= 15
-    elif receivable_ratio > 0.20: score -= 7
+@app.put("/api/business")
+def update_business(payload: dict):
+    db["business"].update(payload)
+    return db["business"]
 
-    # Debt pressure
-    debt_ratio = debt / max(revenue, 1)
-    if debt_ratio > 0.50: score -= 15
-    elif debt_ratio > 0.30: score -= 8
+# --- Financial Records Routes ---
+@app.get("/api/financial-records")
+def get_records():
+    return db["records"]
 
-    # EMI pressure
-    if emi > revenue * 0.05: score -= 10
+@app.post("/api/financial-records")
+def create_record(payload: dict):
+    new_id = len(db["records"]) + 1
+    payload["id"] = new_id
+    db["records"].append(payload)
+    return payload
 
-    return max(0, min(100, int(score)))
+@app.put("/api/financial-records/{record_id}")
+def update_record(record_id: int, payload: dict):
+    for i, r in enumerate(db["records"]):
+        if r["id"] == record_id:
+            payload["id"] = record_id
+            db["records"][i] = payload
+            return payload
+    raise HTTPException(status_code=404, detail="Record not found")
 
-def get_risk(score: int) -> str:
-    if score >= 80: return "LOW"
-    elif score >= 60: return "MEDIUM"
-    elif score >= 40: return "HIGH"
-    return "CRITICAL"
-
-# ---------------------------------------------------------
-# DASHBOARD
-# ---------------------------------------------------------
-@app.get("/api/v1/dashboard/{business_id}")
-def dashboard(business_id: int):
-    score = calculate_health_score(business)
-    risk = get_risk(score)
-    cash_flow = business["revenue"] - business["expenses"]
-    return {
-        "business": business,
-        "health_score": score,
-        "risk": risk,
-        "cash_flow": cash_flow,
-        "top_risks": ["Receivables increasing", "Expense pressure", "Debt obligations"]
-    }
-
-# ---------------------------------------------------------
-# CASH FLOW FORECAST
-# ---------------------------------------------------------
-@app.get("/api/v1/forecast/{business_id}")
-def forecast(business_id: int):
-    return {
-        "historical": [420000, 450000, 470000, 430000, 510000, 530000],
-        "forecast_30": [540000, 555000, 570000, 585000],
-        "forecast_60": [600000, 590000, 575000, 560000],
-        "forecast_90": [545000, 520000, 490000, 460000],
-        "warning": "Potential cash-flow pressure may emerge within 90 days."
-    }
-
-# ---------------------------------------------------------
-# WHAT-IF SIMULATOR
-# ---------------------------------------------------------
-@app.post("/api/v1/simulate")
-def simulate(payload: Dict[str, Any]):
-    revenue_change = float(payload.get("revenue_change", 0))
-    expense_change = float(payload.get("expense_change", 0))
-    collection_change = float(payload.get("collection_change", 0))
-    new_debt = float(payload.get("new_debt", 0))
-
-    simulated_revenue = business["revenue"] * (1 + revenue_change / 100)
-    simulated_expenses = business["expenses"] * (1 + expense_change / 100)
-    simulated_cash = business["cash_balance"]
-    
-    collection_effect = business["receivables"] * (collection_change / 100)
-    simulated_cash += collection_effect
-    simulated_cash += new_debt
-    simulated_debt = business["debt"] + new_debt
-    simulated_profit = simulated_revenue - simulated_expenses
-
-    simulated_data = {
-        **business,
-        "revenue": simulated_revenue,
-        "expenses": simulated_expenses,
-        "profit": simulated_profit,
-        "cash_balance": simulated_cash,
-        "debt": simulated_debt
-    }
-
-    simulated_score = calculate_health_score(simulated_data)
-
-    return {
-        "simulated": {
-            "health_score": simulated_score,
-            "risk": get_risk(simulated_score),
-            "cash_balance": simulated_cash
-        }
-    }
+@app.delete("/api/financial-records/{record_id}")
+def delete_record(record_id: int):
+    db["records"] = [r for r in db["records"] if r["id"] != record_id]
+    return {"message": "Deleted"}
