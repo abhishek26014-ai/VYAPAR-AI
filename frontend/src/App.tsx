@@ -27,7 +27,10 @@ import {
   Upload,
   WalletCards,
   X,
-  Zap
+  Zap,
+  CheckCircle2,
+  Sliders,
+  ArrowRight
 } from 'lucide-react';
 import {
   Area,
@@ -98,7 +101,7 @@ type PageKey =
 type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
 // ============================================================================
-// CONSTANTS & DEFAULT STATE
+// CONSTANTS & DEFAULTS
 // ============================================================================
 
 const defaultBusiness: BusinessProfile = {
@@ -136,7 +139,7 @@ const navItems: { label: PageKey; icon: any }[] = [
 ];
 
 // ============================================================================
-// UTILITY FUNCTIONS
+// UTILITIES
 // ============================================================================
 
 const currency = (amount: number) => {
@@ -259,11 +262,10 @@ function riskFromHealth(health: number): RiskLevel {
 }
 
 // ============================================================================
-// MAIN WORKSPACE COMPONENT
+// MAIN COMPONENT
 // ============================================================================
 
 function Workspace() {
-  // State Management
   const [business, setBusiness] = useState<BusinessProfile>(defaultBusiness);
   const [records, setRecords] = useState<FinancialRecord[]>([]);
   const [dataLoaded, setDataLoaded] = useState(false);
@@ -281,7 +283,6 @@ function Workspace() {
   const [simExpense, setSimExpense] = useState(-5);
   const [simCollections, setSimCollections] = useState(10);
 
-  // Initial Data Fetch
   useEffect(() => {
     let active = true;
     
@@ -305,7 +306,6 @@ function Workspace() {
     return () => { active = false; };
   }, []);
 
-  // Background Business Sync
   useEffect(() => {
     if (!dataLoaded) return;
     
@@ -337,7 +337,6 @@ function Workspace() {
     return () => window.clearTimeout(timeout);
   }, [business.name, business.industry, dataLoaded]);
 
-  // Derived / Calculated State
   const sortedRecords = useMemo(() => {
     return [...records].sort((a, b) => a.date.localeCompare(b.date));
   }, [records]);
@@ -368,7 +367,6 @@ function Workspace() {
     ? (current.overdueReceivables / current.receivables) * 100 
     : 0;
 
-  // Chart Data Formatting
   const cashFlowData = sortedRecords.map((r) => ({
     month: new Date(r.date).toLocaleDateString('en-IN', { month: 'short' }),
     inflow: Math.round(r.revenue / 1000),
@@ -388,7 +386,6 @@ function Workspace() {
     { name: 'Payables', value: current.payables },
   ] : [];
 
-  // Logic Generators
   const recommendations = useMemo(() => {
     const list: { title: string; body: string; tone: 'green' | 'orange' | 'red' }[] = [];
     
@@ -524,7 +521,6 @@ function Workspace() {
     };
   }, [current, simRevenue, simExpense, simCollections, health, profit]);
 
-  // Action Handlers
   const refreshData = async () => {
     try {
       const [serverBusiness, serverRecords] = await Promise.all([businessApi.get(), recordsApi.list()]);
@@ -612,7 +608,7 @@ function Workspace() {
   };
 
   // ============================================================================
-  // RENDER FUNCTIONS (TABS)
+  // OVERVIEW TAB
   // ============================================================================
 
   const renderOverview = () => {
@@ -750,8 +746,7 @@ function Workspace() {
                   <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill:'#94a39a',fontSize:10}}/>
                   <YAxis axisLine={false} tickLine={false} tick={{fill:'#94a39a',fontSize:9}} tickFormatter={(v)=>`${v}k`}/>
                   <Tooltip formatter={(value)=>[`₹${Number(value || 0)}k`,'Net cash']}/>
-                  <Area type="monotone" dataKey="net" stroke="#0d8b62" strokeWidth={2.4} fill="url(#cashGradient2)"/>
-                </AreaChart>
+                  <Area type="monotone" dataKey="net" stroke="#0d8b62" strokeWidth={2.4} fill="url(#cashGradient2)"/></AreaChart>
               </ResponsiveContainer>
             </div>
             <div className="chart-legend">
@@ -788,7 +783,6 @@ function Workspace() {
             </div>
           </div>
 
-          {/* BULLETPROOF PIE CHART CONTAINER */}
           <div className="panel">
             <div className="panel-header">
               <div>
@@ -796,18 +790,16 @@ function Workspace() {
                 <p>Latest record snapshot</p>
               </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '16px 0', height: '100%', minHeight: '200px' }}>
-              {/* Fixed size chart wrapper so it never squishes */}
-              <div style={{ width: '160px', height: '160px', position: 'relative', flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '16px 0', minHeight: '180px' }}>
+              <div style={{ width: '150px', height: '150px', position: 'relative', flexShrink: 0 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={expenseBreakdown} dataKey="value" innerRadius={55} outerRadius={75} paddingAngle={2}>
+                    <Pie data={expenseBreakdown} dataKey="value" innerRadius={50} outerRadius={70} paddingAngle={2}>
                       {expenseBreakdown.map((_,i) => <Cell key={i} fill={['#0d8b62','#43aa7f','#f4ad28','#4f8df7'][i]}/>)}
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
                 
-                {/* Center text explicitly positioned absolute */}
                 <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
                   <strong style={{ fontSize: '15px', color: '#111827', lineHeight: 1.2 }}>
                     {compactCurrency(current?.operatingExpenses || 0)}
@@ -816,8 +808,7 @@ function Workspace() {
                 </div>
               </div>
               
-              {/* Flex legend on the right side */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flexGrow: 1 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', flexGrow: 1 }}>
                 {expenseBreakdown.map((item, i) => (
                   <div key={item.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#4b5563' }}>
@@ -890,6 +881,352 @@ function Workspace() {
       </>
     );
   };
+
+  // ============================================================================
+  // REBUILT: FINANCIAL HEALTH TAB
+  // ============================================================================
+
+  const renderHealth = () => {
+    const drivers = [
+      { label: 'Revenue trend', score: clamp(70 + revenueGrowth * 1.8, 0, 100), desc: `${revenueGrowth >= 0 ? '+' : ''}${revenueGrowth.toFixed(1)}% vs previous record` },
+      { label: 'Profitability margin', score: clamp(50 + margin * 2.2, 0, 100), desc: `${margin.toFixed(1)}% operating margin` },
+      { label: 'Liquidity coverage', score: clamp(((current?.cashBalance || 0) / Math.max(1, current?.payables || 1)) * 35, 0, 100), desc: `${cashRunwayMonths.toFixed(1)} months cash runway` },
+      { label: 'Receivables health', score: clamp(100 - overdueRatio * 1.2, 0, 100), desc: `${overdueRatio.toFixed(1)}% overdue ratio` },
+      { label: 'Debt to revenue', score: clamp(100 - (((current?.loanOutstanding || 0) / Math.max(1, current?.revenue || 1)) * 120), 0, 100), desc: `${((current?.loanOutstanding || 0) / Math.max(1, current?.revenue || 1) * 100).toFixed(1)}% debt burden` },
+      { label: 'Expense discipline', score: clamp(80 - Math.max(0, expenseGrowth) * 1.6, 0, 100), desc: `${expenseGrowth.toFixed(1)}% expense change` },
+    ];
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        {/* Top Summary Banner */}
+        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
+            <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: '#ecfdf5', border: '6px solid #10b981', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <span style={{ fontSize: '32px', fontWeight: '800', color: '#047857', lineHeight: 1 }}>{health}</span>
+              <span style={{ fontSize: '11px', fontWeight: '600', color: '#059669', textTransform: 'uppercase', marginTop: '2px' }}>/ 100</span>
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <h3 style={{ fontSize: '22px', fontWeight: '700', color: '#0f172a', margin: 0 }}>Financial Solvency Rating</h3>
+                <span style={{ background: risk === 'LOW' ? '#d1fae5' : '#fee2e2', color: risk === 'LOW' ? '#065f46' : '#991b1b', fontSize: '11px', fontWeight: '700', padding: '3px 10px', borderRadius: '999px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  {risk} RISK
+                </span>
+              </div>
+              <p style={{ color: '#64748b', fontSize: '14px', margin: '6px 0 0 0', maxWidth: '600px' }}>
+                Comprehensive score evaluating revenue trajectory, liquidity buffers, margin preservation, working capital cycles, and debt exposure.
+              </p>
+            </div>
+          </div>
+          <button className="primary-btn" onClick={() => go('What-If Simulator')}>
+            Run Scenario <Zap size={14} style={{ marginLeft: '6px' }}/>
+          </button>
+        </div>
+
+        {/* Driver Grid with clean progress tracks */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+          {drivers.map((d) => (
+            <div key={d.label} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '14px', fontWeight: '600', color: '#1e293b' }}>{d.label}</span>
+                <span style={{ fontSize: '15px', fontWeight: '700', color: d.score >= 80 ? '#059669' : d.score >= 60 ? '#d97706' : '#dc2626' }}>
+                  {Math.round(d.score)} <span style={{ fontSize: '11px', color: '#94a39a', fontWeight: '500' }}>/ 100</span>
+                </span>
+              </div>
+
+              {/* Explicit Progress Track */}
+              <div style={{ width: '100%', height: '8px', background: '#f1f5f9', borderRadius: '999px', overflow: 'hidden' }}>
+                <div 
+                  style={{ 
+                    width: `${d.score}%`, 
+                    height: '100%', 
+                    background: d.score >= 80 ? '#10b981' : d.score >= 60 ? '#f59e0b' : '#ef4444', 
+                    borderRadius: '999px',
+                    transition: 'width 0.4s ease'
+                  }} 
+                />
+              </div>
+
+              <div style={{ fontSize: '12px', color: '#64748b' }}>
+                {d.desc}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Actionable Recommendations */}
+        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+            <Sparkles size={18} style={{ color: '#059669' }}/>
+            <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#0f172a', margin: 0 }}>Prescriptive Recommendations</h3>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
+            {recommendations.map((r, i) => (
+              <div key={i} style={{ background: '#f8fafc', border: '1px solid #edf2f7', borderRadius: '12px', padding: '16px', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: r.tone === 'green' ? '#10b981' : r.tone === 'orange' ? '#f59e0b' : '#ef4444', marginTop: '6px', flexShrink: 0 }}/>
+                <div>
+                  <strong style={{ display: 'block', fontSize: '13px', color: '#1e293b', marginBottom: '4px' }}>{r.title}</strong>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#64748b', lineHeight: '1.4' }}>{r.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ============================================================================
+  // REBUILT: RISK ANALYSIS TAB
+  // ============================================================================
+
+  const renderRisk = () => {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        {/* Risk Level Banner */}
+        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', alignItems: 'center' }}>
+          <div>
+            <span style={{ fontSize: '11px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Current Risk Category</span>
+            <div style={{ fontSize: '32px', fontWeight: '800', color: risk === 'LOW' ? '#047857' : risk === 'MEDIUM' ? '#b45309' : '#b91c1c', marginTop: '4px' }}>
+              {risk} RISK
+            </div>
+            <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#64748b' }}>Computed from health score thresholds & debt signals</p>
+          </div>
+
+          <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #edf2f7' }}>
+            <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '600' }}>Revenue Trend</span>
+            <div style={{ fontSize: '20px', fontWeight: '700', color: revenueGrowth >= 0 ? '#047857' : '#b91c1c', marginTop: '2px' }}>
+              {revenueGrowth >= 0 ? '+' : ''}{revenueGrowth.toFixed(1)}%
+            </div>
+            <small style={{ color: '#94a3b8', fontSize: '11px' }}>vs previous month</small>
+          </div>
+
+          <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #edf2f7' }}>
+            <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '600' }}>Expense Drift</span>
+            <div style={{ fontSize: '20px', fontWeight: '700', color: expenseGrowth <= 5 ? '#047857' : '#b91c1c', marginTop: '2px' }}>
+              {expenseGrowth >= 0 ? '+' : ''}{expenseGrowth.toFixed(1)}%
+            </div>
+            <small style={{ color: '#94a3b8', fontSize: '11px' }}>operating burn rate</small>
+          </div>
+
+          <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #edf2f7' }}>
+            <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '600' }}>Debt / Revenue</span>
+            <div style={{ fontSize: '20px', fontWeight: '700', color: '#1e293b', marginTop: '2px' }}>
+              {current?.revenue ? ((current.loanOutstanding / current.revenue) * 100).toFixed(1) : '0'}%
+            </div>
+            <small style={{ color: '#94a3b8', fontSize: '11px' }}>leverage ratio</small>
+          </div>
+        </div>
+
+        {/* Signals & Anomalies Feed */}
+        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+            <div>
+              <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#0f172a', margin: 0 }}>Active Risk Signals & Anomalies</h3>
+              <p style={{ fontSize: '13px', color: '#64748b', margin: '4px 0 0 0' }}>Variance and threshold warnings detected across accounts</p>
+            </div>
+            <span style={{ background: '#f1f5f9', color: '#475569', fontSize: '11px', fontWeight: '700', padding: '4px 10px', borderRadius: '999px' }}>
+              {anomalies.length} Signals
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {anomalies.map((a, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: '#f8fafc', border: '1px solid #edf2f7', borderRadius: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: a.severity === 'High' ? '#fee2e2' : '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: a.severity === 'High' ? '#b91c1c' : '#b45309', flexShrink: 0 }}>
+                    <AlertTriangle size={16}/>
+                  </div>
+                  <div>
+                    <strong style={{ fontSize: '14px', color: '#1e293b' }}>{a.title}</strong>
+                    <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#64748b' }}>{a.body}</p>
+                  </div>
+                </div>
+                <span style={{ fontSize: '11px', fontWeight: '700', padding: '3px 10px', borderRadius: '999px', background: a.severity === 'High' ? '#fecaca' : '#fed7aa', color: a.severity === 'High' ? '#991b1b' : '#9a3412' }}>
+                  {a.severity}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ============================================================================
+  // REBUILT: WHAT-IF SIMULATOR TAB
+  // ============================================================================
+
+  const renderSimulator = () => {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        {/* Header copy */}
+        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ background: '#ecfdf5', padding: '8px', borderRadius: '10px', color: '#047857' }}>
+              <Zap size={20}/>
+            </div>
+            <div>
+              <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#0f172a', margin: 0 }}>What-If Scenario Simulator</h3>
+              <p style={{ fontSize: '13px', color: '#64748b', margin: '4px 0 0 0' }}>
+                Stress test operational levers and forecast instant impacts on Health Score, cash runway, and net profit.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* 2-Column Interactive Workspace */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '24px' }}>
+          {/* Levers Controls */}
+          <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '28px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <h4 style={{ fontSize: '16px', fontWeight: '700', color: '#1e293b', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Sliders size={16} style={{ color: '#047857' }}/> Adjust Operational Levers
+            </h4>
+
+            {/* Slider 1: Revenue */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '13px', fontWeight: '600', color: '#334155' }}>Projected Revenue Change</span>
+                <span style={{ fontSize: '13px', fontWeight: '700', color: simRevenue >= 0 ? '#059669' : '#dc2626', background: simRevenue >= 0 ? '#ecfdf5' : '#fef2f2', padding: '2px 8px', borderRadius: '6px' }}>
+                  {simRevenue >= 0 ? '+' : ''}{simRevenue}%
+                </span>
+              </div>
+              <input 
+                type="range" 
+                min="-50" 
+                max="50" 
+                step="1" 
+                value={simRevenue} 
+                onChange={(e) => setSimRevenue(Number(e.target.value))}
+                style={{ width: '100%', accentColor: '#0d8b62', cursor: 'pointer' }}
+              />
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#94a3b8' }}>
+                <span>-50% downturn</span>
+                <span>0%</span>
+                <span>+50% expansion</span>
+              </div>
+            </div>
+
+            {/* Slider 2: Expenses */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '13px', fontWeight: '600', color: '#334155' }}>Operating Expense Variance</span>
+                <span style={{ fontSize: '13px', fontWeight: '700', color: simExpense <= 0 ? '#059669' : '#dc2626', background: simExpense <= 0 ? '#ecfdf5' : '#fef2f2', padding: '2px 8px', borderRadius: '6px' }}>
+                  {simExpense >= 0 ? '+' : ''}{simExpense}%
+                </span>
+              </div>
+              <input 
+                type="range" 
+                min="-50" 
+                max="50" 
+                step="1" 
+                value={simExpense} 
+                onChange={(e) => setSimExpense(Number(e.target.value))}
+                style={{ width: '100%', accentColor: '#0d8b62', cursor: 'pointer' }}
+              />
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#94a3b8' }}>
+                <span>-50% cost cutting</span>
+                <span>0%</span>
+                <span>+50% cost surge</span>
+              </div>
+            </div>
+
+            {/* Slider 3: Collections */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '13px', fontWeight: '600', color: '#334155' }}>Expedited AR Collections</span>
+                <span style={{ fontSize: '13px', fontWeight: '700', color: '#059669', background: '#ecfdf5', padding: '2px 8px', borderRadius: '6px' }}>
+                  +{simCollections}%
+                </span>
+              </div>
+              <input 
+                type="range" 
+                min="0" 
+                max="40" 
+                step="1" 
+                value={simCollections} 
+                onChange={(e) => setSimCollections(Number(e.target.value))}
+                style={{ width: '100%', accentColor: '#0d8b62', cursor: 'pointer' }}
+              />
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#94a3b8' }}>
+                <span>Baseline</span>
+                <span>+20% collected</span>
+                <span>+40% accelerated</span>
+              </div>
+            </div>
+
+            <div style={{ background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '10px', padding: '12px 14px', fontSize: '12px', color: '#475569' }}>
+              <strong>Applied Hypothesis:</strong> Revenue {simRevenue >= 0 ? '+' : ''}{simRevenue}%, Expenses {simExpense >= 0 ? '+' : ''}{simExpense}%, Receivables Recovery +{simCollections}%.
+            </div>
+          </div>
+
+          {/* Simulated Outputs & Comparison */}
+          <div style={{ background: '#042f24', color: '#ffffff', borderRadius: '16px', padding: '28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxShadow: '0 4px 12px rgba(4,47,36,0.15)' }}>
+            <div>
+              <span style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.06em', color: '#6ee7b7', textTransform: 'uppercase' }}>
+                SIMULATION RESULTS
+              </span>
+              <h4 style={{ fontSize: '20px', fontWeight: '700', color: '#ffffff', margin: '4px 0 20px 0' }}>
+                Projected Business Outcome
+              </h4>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '18px' }}>
+                <div style={{ background: 'rgba(255,255,255,0.06)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <span style={{ fontSize: '12px', color: '#a7f3d0' }}>Simulated Health</span>
+                  <div style={{ fontSize: '28px', fontWeight: '800', color: '#ffffff', marginTop: '4px' }}>
+                    {simulator.health} <span style={{ fontSize: '14px', color: '#6ee7b7' }}>/100</span>
+                  </div>
+                </div>
+
+                <div style={{ background: 'rgba(255,255,255,0.06)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <span style={{ fontSize: '12px', color: '#a7f3d0' }}>Simulated Risk</span>
+                  <div style={{ fontSize: '24px', fontWeight: '800', color: simulator.risk === 'LOW' ? '#6ee7b7' : '#fcd34d', marginTop: '6px' }}>
+                    {simulator.risk}
+                  </div>
+                </div>
+
+                <div style={{ background: 'rgba(255,255,255,0.06)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <span style={{ fontSize: '12px', color: '#a7f3d0' }}>Projected Cash</span>
+                  <div style={{ fontSize: '20px', fontWeight: '700', color: '#ffffff', marginTop: '4px' }}>
+                    {currency(simulator.cash)}
+                  </div>
+                </div>
+
+                <div style={{ background: 'rgba(255,255,255,0.06)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <span style={{ fontSize: '12px', color: '#a7f3d0' }}>Estimated Profit</span>
+                  <div style={{ fontSize: '20px', fontWeight: '700', color: '#ffffff', marginTop: '4px' }}>
+                    {currency(simulator.profit)}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Side-by-side transition preview */}
+            <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <span style={{ fontSize: '11px', color: '#a7f3d0' }}>Current Health</span>
+                <div style={{ fontSize: '18px', fontWeight: '700' }}>{health}</div>
+              </div>
+              <ArrowRight size={18} style={{ color: '#34d399' }}/>
+              <div>
+                <span style={{ fontSize: '11px', color: '#a7f3d0' }}>Simulated Health</span>
+                <div style={{ fontSize: '18px', fontWeight: '700', color: '#6ee7b7' }}>{simulator.health}</div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <span style={{ fontSize: '11px', color: '#a7f3d0' }}>Delta</span>
+                <div style={{ fontSize: '18px', fontWeight: '700', color: simulator.health >= health ? '#34d399' : '#f87171' }}>
+                  {simulator.health >= health ? '+' : ''}{simulator.health - health} pts
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ============================================================================
+  // OTHER TABS (DATA ENTRY, CASH FLOW, REPORTS)
+  // ============================================================================
 
   const renderDataEntry = () => {
     return (
@@ -1028,95 +1365,6 @@ function Workspace() {
     );
   };
 
-  const renderHealth = () => (
-    <section className="page-grid-single">
-      <div className="panel health-summary">
-        <div>
-          <div className="health-large">{health}</div>
-          <span>/ 100</span>
-        </div>
-        <div>
-          <h3>Financial Health</h3>
-          <p>The score is calculated from revenue trend, profitability, liquidity, receivables, debt and expense growth.</p>
-          <div className="health-pill">{risk}</div>
-        </div>
-      </div>
-      <div className="driver-grid">
-        {[
-          ['Revenue trend', clamp(70 + revenueGrowth*1.8, 0, 100)],
-          ['Profitability', clamp(50 + margin*2.2, 0, 100)],
-          ['Liquidity', clamp((current?.cashBalance || 0) / Math.max(1,current?.payables || 1)*35, 0, 100)],
-          ['Receivables', clamp(100-overdueRatio*1.2, 0, 100)],
-          ['Debt', clamp(100-((current?.loanOutstanding||0)/Math.max(1,current?.revenue||1))*120, 0, 100)],
-          ['Expense control', clamp(80-Math.max(0,expenseGrowth)*1.6, 0, 100)],
-        ].map(([label,value]) => (
-          <div className="driver-card" key={label as string}>
-            <div className="driver-label">
-              <span>{label as string}</span>
-              <strong>{Math.round(value as number)}</strong>
-            </div>
-            <div className="driver-track"><span style={{width:`${value}%`}}/></div>
-          </div>
-        ))}
-      </div>
-      <div className="panel">
-        <div className="panel-header">
-          <div>
-            <h3>How to improve the score</h3>
-            <p>Focus on the strongest negative drivers first.</p>
-          </div>
-        </div>
-        {recommendations.map((r,i) => (
-          <div className="recommendation wide" key={i}>
-            <div className="rec-icon"><Sparkles size={15}/></div>
-            <div>
-              <strong>{r.title}</strong>
-              <small>{r.body}</small>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-
-  const renderRisk = () => (
-    <section className="page-grid-two">
-      <div className="panel">
-        <div className="panel-header">
-          <div>
-            <h3>Current risk</h3>
-            <p>Prototype risk bands derived from current health and financial signals.</p>
-          </div>
-        </div>
-        <div className={`big-risk ${risk.toLowerCase()}`}>{risk}</div>
-        <div className="risk-reason-list">
-          <div><strong>Revenue trend</strong><span>{revenueGrowth.toFixed(1)}%</span></div>
-          <div><strong>Expense growth</strong><span>{expenseGrowth.toFixed(1)}%</span></div>
-          <div><strong>Overdue receivables</strong><span>{overdueRatio.toFixed(1)}%</span></div>
-          <div><strong>Debt / revenue</strong><span>{((current?.loanOutstanding || 0)/(current?.revenue || 1)*100).toFixed(1)}%</span></div>
-        </div>
-      </div>
-      <div className="panel">
-        <div className="panel-header">
-          <div>
-            <h3>Risk signals</h3>
-            <p>Concrete reasons driving the current status.</p>
-          </div>
-        </div>
-        {anomalies.map((a,i) => (
-          <div className="alert-card" key={i}>
-            <AlertTriangle size={17}/>
-            <div>
-              <strong>{a.title}</strong>
-              <small>{a.body}</small>
-            </div>
-            <span>{a.severity}</span>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-
   const renderCashFlow = () => (
     <section className="page-grid-single">
       <div className="panel">
@@ -1220,72 +1468,6 @@ function Workspace() {
     </section>
   );
 
-  const renderSimulator = () => (
-    <section className="page-grid-two">
-      <div className="panel">
-        <div className="panel-header">
-          <div>
-            <h3>Scenario controls</h3>
-            <p>Move the sliders and see estimated changes instantly.</p>
-          </div>
-        </div>
-        <div className="slider-row">
-          <label>Revenue change <strong>{simRevenue}%</strong></label>
-          <input type="range" min="-50" max="50" step="1" value={simRevenue} onChange={e=>setSimRevenue(Number(e.target.value))}/>
-        </div>
-        <div className="slider-row">
-          <label>Expense change <strong>{simExpense}%</strong></label>
-          <input type="range" min="-50" max="50" step="1" value={simExpense} onChange={e=>setSimExpense(Number(e.target.value))}/>
-        </div>
-        <div className="slider-row">
-          <label>Collection improvement <strong>{simCollections}%</strong></label>
-          <input type="range" min="0" max="40" step="1" value={simCollections} onChange={e=>setSimCollections(Number(e.target.value))}/>
-        </div>
-        <div className="scenario-box">
-          <strong>Scenario</strong>
-          <span>Revenue {simRevenue >= 0 ? '+' : ''}{simRevenue}% · Expenses {simExpense >= 0 ? '+' : ''}{simExpense}% · Collections +{simCollections}%</span>
-        </div>
-      </div>
-      <div className="panel">
-        <div className="panel-header">
-          <div>
-            <h3>Simulated outcome</h3>
-            <p>Illustrative estimate from the current saved record.</p>
-          </div>
-        </div>
-        <div className="sim-result-grid">
-          <div>
-            <span>Health</span>
-            <strong>{simulator.health}/100</strong>
-          </div>
-          <div>
-            <span>Risk</span>
-            <strong className="risk-text">{simulator.risk}</strong>
-          </div>
-          <div>
-            <span>Cash</span>
-            <strong>{currency(simulator.cash)}</strong>
-          </div>
-          <div>
-            <span>Profit</span>
-            <strong>{currency(simulator.profit)}</strong>
-          </div>
-        </div>
-        <div className="compare-row">
-          <div>
-            <span>Current health</span>
-            <strong>{health}</strong>
-          </div>
-          <div className="arrow">→</div>
-          <div>
-            <span>Simulated health</span>
-            <strong>{simulator.health}</strong>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-
   const renderReports = () => (
     <section className="page-grid-single">
       <div className="panel">
@@ -1323,7 +1505,6 @@ function Workspace() {
     </section>
   );
 
-  // Router
   const page = activeNav === 'Overview' ? renderOverview()
     : activeNav === 'Data Entry' ? renderDataEntry()
     : activeNav === 'Financial Health' ? renderHealth()
@@ -1335,7 +1516,7 @@ function Workspace() {
     : renderReports();
 
   // ============================================================================
-  // BULLETPROOF STRUCTURAL LAYOUT
+  // APP SHELL
   // ============================================================================
   
   return (
@@ -1343,8 +1524,7 @@ function Workspace() {
       className="app-shell" 
       style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}
     >
-      
-      {/* SIDEBAR WRAPPER */}
+      {/* SIDEBAR */}
       <aside 
         className={`sidebar ${sidebarOpen ? 'expanded' : 'collapsed'} ${mobileOpen ? 'mobile-visible' : ''}`}
         style={{ 
@@ -1354,7 +1534,6 @@ function Workspace() {
           flexShrink: 0 
         }}
       >
-        {/* Sidebar Header (Fixed at top) */}
         <div className="brand-row" style={{ flexShrink: 0 }}>
           <div className="brand-mark"><span>V</span></div>
           {sidebarOpen && (
@@ -1370,7 +1549,6 @@ function Workspace() {
           )}
         </div>
         
-        {/* Business Profile Card (Fixed at top) */}
         <div className="workspace-card" style={{ flexShrink: 0 }}>
           <div className="workspace-icon">
             <CircleDollarSign size={16}/>
@@ -1384,7 +1562,6 @@ function Workspace() {
           )}
         </div>
         
-        {/* Navigation List (Scrolls independently if too long) */}
         <nav 
           className="nav-list" 
           style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}
@@ -1402,7 +1579,6 @@ function Workspace() {
           ))}
         </nav>
         
-        {/* Footer actions & TEAM APEX (Locked to bottom) */}
         <div 
           className="sidebar-bottom" 
           style={{ 
@@ -1457,12 +1633,11 @@ function Workspace() {
         />
       )}
       
-      {/* MAIN CONTENT WRAPPER */}
+      {/* MAIN CONTAINER */}
       <main 
         className="main-shell" 
         style={{ flex: 1, height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}
       >
-        {/* Topbar (Fixed at top of main scroll area) */}
         <header className="topbar" style={{ flexShrink: 0 }}>
           <div className="topbar-left">
             <button className="mobile-menu-btn" onClick={() => setMobileOpen(true)}>
@@ -1492,13 +1667,11 @@ function Workspace() {
           </div>
         </header>
         
-        {/* Dynamic Content Rendering */}
         <div className="content" style={{ flex: 1, paddingBottom: '40px' }}>
           {page}
         </div>
       </main>
 
-      {/* Global Notifications */}
       {savedMessage && (
         <div className="toast">
           <Save size={15}/>{savedMessage}
@@ -1607,7 +1780,7 @@ function AuthScreen() {
 }
 
 // ============================================================================
-// APP ENTRY POINT
+// APP ROOT
 // ============================================================================
 
 export default function App() {
@@ -1616,7 +1789,6 @@ export default function App() {
   useEffect(() => {
     if (!authenticated) return;
     
-    // Verify token validity on load
     authApi.me().catch(() => { 
       localStorage.removeItem('vyaparai-token'); 
       setAuthenticated(false); 
