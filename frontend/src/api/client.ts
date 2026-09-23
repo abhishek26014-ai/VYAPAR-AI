@@ -1,4 +1,4 @@
-const BASE_URL = "https://vyaparai-fkhz.onrender.com";
+const API_URL = 'https://vyaparai-fkhz.onrender.com';
 
 export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem('vyaparai-token');
