@@ -25,6 +25,7 @@ import {
   TrendingDown,
   TrendingUp,
   Upload,
+  Download,
   WalletCards,
   X,
   Zap,
@@ -391,47 +392,47 @@ function Workspace() {
     
     if (receivableGrowth > 10 || overdueRatio > 20) {
       list.push({ 
-        title: 'Accelerate collections', 
-        body: `Receivables are ${receivableGrowth.toFixed(1)}% higher than the previous record and ${overdueRatio.toFixed(1)}% are overdue.`, 
+        title: 'Accelerate Collections', 
+        body: `Receivables are ${receivableGrowth.toFixed(1)}% higher than the previous record and ${overdueRatio.toFixed(1)}% are overdue. Consider offering early payment discounts.`, 
         tone: 'orange' 
       });
     }
     
     if (expenseGrowth > 10) {
       list.push({ 
-        title: 'Review expense growth', 
-        body: `Operating expenses increased ${expenseGrowth.toFixed(1)}% versus the previous record.`, 
+        title: 'Review Expense Growth', 
+        body: `Operating expenses increased ${expenseGrowth.toFixed(1)}% versus the previous record. Audit recent vendor bills for anomalies.`, 
         tone: 'red' 
       });
     }
     
     if (cashRunwayMonths < 1.5) {
       list.push({ 
-        title: 'Protect liquidity', 
-        body: `Current cash covers about ${cashRunwayMonths.toFixed(1)} months of the latest operating expense level.`, 
+        title: 'Protect Liquidity', 
+        body: `Current cash covers only ${cashRunwayMonths.toFixed(1)} months of the latest operating expense level. Delay non-essential capital expenditures.`, 
         tone: 'red' 
       });
     }
     
     if (margin < 10) {
       list.push({ 
-        title: 'Protect margin', 
-        body: `Current estimated operating margin is ${margin.toFixed(1)}%. Review pricing and variable costs.`, 
+        title: 'Protect Margin', 
+        body: `Current estimated operating margin is ${margin.toFixed(1)}%. Review pricing architecture and variable costs immediately.`, 
         tone: 'orange' 
       });
     }
     
     if (!list.length) {
       list.push({ 
-        title: 'Maintain the current position', 
-        body: 'Current indicators are relatively stable. Keep monitoring cash flow, receivables and expenses.', 
+        title: 'Maintain Current Position', 
+        body: 'Core financial indicators are relatively stable. Keep monitoring cash flow, receivables, and operational expenses.', 
         tone: 'green' 
       });
     }
     
     list.push({ 
-      title: 'Run a scenario check', 
-      body: 'Use the What-If Simulator before adding major spending or debt.', 
+      title: 'Run a Scenario Check', 
+      body: 'Use the What-If Simulator before committing to major spending, hiring, or taking on new debt facilities.', 
       tone: 'green' 
     });
     
@@ -443,33 +444,25 @@ function Workspace() {
     
     if (Math.abs(revenueGrowth) > 15) {
       result.push({ 
-        title: 'Revenue change detected', 
-        body: `Revenue changed ${revenueGrowth.toFixed(1)}% from the previous record.`, 
+        title: 'Revenue Variance Detected', 
+        body: `Top-line revenue shifted by ${revenueGrowth.toFixed(1)}% from the previous recorded period, falling outside the typical operational threshold.`, 
         severity: revenueGrowth < 0 ? 'High' : 'Watch' 
       });
     }
     
     if (expenseGrowth > 15) {
       result.push({ 
-        title: 'Expense spike', 
-        body: `Operating expenses increased ${expenseGrowth.toFixed(1)}%.`, 
+        title: 'Operating Expense Spike', 
+        body: `Total operating expenses increased by an irregular ${expenseGrowth.toFixed(1)}%. This triggers an algorithmic warning for potential cash burn acceleration.`, 
         severity: 'High' 
       });
     }
     
     if (receivableGrowth > 15) {
       result.push({ 
-        title: 'Receivables spike', 
-        body: `Receivables increased ${receivableGrowth.toFixed(1)}%.`, 
+        title: 'Receivables Expansion', 
+        body: `Accounts receivable expanded by ${receivableGrowth.toFixed(1)}%, signaling a potential slowdown in cash conversion cycles.`, 
         severity: 'High' 
-      });
-    }
-    
-    if (!result.length) {
-      result.push({ 
-        title: 'No major anomaly detected', 
-        body: 'Current records do not trigger the prototype anomaly thresholds.', 
-        severity: 'Watch' 
       });
     }
     
@@ -608,7 +601,7 @@ function Workspace() {
   };
 
   // ============================================================================
-  // OVERVIEW TAB
+  // TAB RENDERING FUNCTIONS
   // ============================================================================
 
   const renderOverview = () => {
@@ -799,7 +792,6 @@ function Workspace() {
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
-                
                 <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
                   <strong style={{ fontSize: '15px', color: '#111827', lineHeight: 1.2 }}>
                     {compactCurrency(current?.operatingExpenses || 0)}
@@ -807,7 +799,6 @@ function Workspace() {
                   <small style={{ fontSize: '11px', color: '#6b7280' }}>Operating</small>
                 </div>
               </div>
-              
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', flexGrow: 1 }}>
                 {expenseBreakdown.map((item, i) => (
                   <div key={item.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
@@ -882,10 +873,6 @@ function Workspace() {
     );
   };
 
-  // ============================================================================
-  // REBUILT: FINANCIAL HEALTH TAB
-  // ============================================================================
-
   const renderHealth = () => {
     const drivers = [
       { label: 'Revenue trend', score: clamp(70 + revenueGrowth * 1.8, 0, 100), desc: `${revenueGrowth >= 0 ? '+' : ''}${revenueGrowth.toFixed(1)}% vs previous record` },
@@ -898,7 +885,6 @@ function Workspace() {
 
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-        {/* Top Summary Banner */}
         <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
             <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: '#ecfdf5', border: '6px solid #10b981', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -922,7 +908,6 @@ function Workspace() {
           </button>
         </div>
 
-        {/* Driver Grid with clean progress tracks */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
           {drivers.map((d) => (
             <div key={d.label} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
@@ -932,57 +917,20 @@ function Workspace() {
                   {Math.round(d.score)} <span style={{ fontSize: '11px', color: '#94a39a', fontWeight: '500' }}>/ 100</span>
                 </span>
               </div>
-
-              {/* Explicit Progress Track */}
               <div style={{ width: '100%', height: '8px', background: '#f1f5f9', borderRadius: '999px', overflow: 'hidden' }}>
-                <div 
-                  style={{ 
-                    width: `${d.score}%`, 
-                    height: '100%', 
-                    background: d.score >= 80 ? '#10b981' : d.score >= 60 ? '#f59e0b' : '#ef4444', 
-                    borderRadius: '999px',
-                    transition: 'width 0.4s ease'
-                  }} 
-                />
+                <div style={{ width: `${d.score}%`, height: '100%', background: d.score >= 80 ? '#10b981' : d.score >= 60 ? '#f59e0b' : '#ef4444', borderRadius: '999px', transition: 'width 0.4s ease' }}/>
               </div>
-
-              <div style={{ fontSize: '12px', color: '#64748b' }}>
-                {d.desc}
-              </div>
+              <div style={{ fontSize: '12px', color: '#64748b' }}>{d.desc}</div>
             </div>
           ))}
-        </div>
-
-        {/* Actionable Recommendations */}
-        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-            <Sparkles size={18} style={{ color: '#059669' }}/>
-            <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#0f172a', margin: 0 }}>Prescriptive Recommendations</h3>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
-            {recommendations.map((r, i) => (
-              <div key={i} style={{ background: '#f8fafc', border: '1px solid #edf2f7', borderRadius: '12px', padding: '16px', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: r.tone === 'green' ? '#10b981' : r.tone === 'orange' ? '#f59e0b' : '#ef4444', marginTop: '6px', flexShrink: 0 }}/>
-                <div>
-                  <strong style={{ display: 'block', fontSize: '13px', color: '#1e293b', marginBottom: '4px' }}>{r.title}</strong>
-                  <p style={{ margin: 0, fontSize: '12px', color: '#64748b', lineHeight: '1.4' }}>{r.body}</p>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
     );
   };
 
-  // ============================================================================
-  // REBUILT: RISK ANALYSIS TAB
-  // ============================================================================
-
   const renderRisk = () => {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-        {/* Risk Level Banner */}
         <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', alignItems: 'center' }}>
           <div>
             <span style={{ fontSize: '11px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Current Risk Category</span>
@@ -991,7 +939,6 @@ function Workspace() {
             </div>
             <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#64748b' }}>Computed from health score thresholds & debt signals</p>
           </div>
-
           <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #edf2f7' }}>
             <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '600' }}>Revenue Trend</span>
             <div style={{ fontSize: '20px', fontWeight: '700', color: revenueGrowth >= 0 ? '#047857' : '#b91c1c', marginTop: '2px' }}>
@@ -999,7 +946,6 @@ function Workspace() {
             </div>
             <small style={{ color: '#94a3b8', fontSize: '11px' }}>vs previous month</small>
           </div>
-
           <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #edf2f7' }}>
             <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '600' }}>Expense Drift</span>
             <div style={{ fontSize: '20px', fontWeight: '700', color: expenseGrowth <= 5 ? '#047857' : '#b91c1c', marginTop: '2px' }}>
@@ -1007,7 +953,6 @@ function Workspace() {
             </div>
             <small style={{ color: '#94a3b8', fontSize: '11px' }}>operating burn rate</small>
           </div>
-
           <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #edf2f7' }}>
             <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '600' }}>Debt / Revenue</span>
             <div style={{ fontSize: '20px', fontWeight: '700', color: '#1e293b', marginTop: '2px' }}>
@@ -1016,50 +961,192 @@ function Workspace() {
             <small style={{ color: '#94a3b8', fontSize: '11px' }}>leverage ratio</small>
           </div>
         </div>
-
-        {/* Signals & Anomalies Feed */}
-        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-            <div>
-              <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#0f172a', margin: 0 }}>Active Risk Signals & Anomalies</h3>
-              <p style={{ fontSize: '13px', color: '#64748b', margin: '4px 0 0 0' }}>Variance and threshold warnings detected across accounts</p>
-            </div>
-            <span style={{ background: '#f1f5f9', color: '#475569', fontSize: '11px', fontWeight: '700', padding: '4px 10px', borderRadius: '999px' }}>
-              {anomalies.length} Signals
-            </span>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {anomalies.map((a, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: '#f8fafc', border: '1px solid #edf2f7', borderRadius: '12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: a.severity === 'High' ? '#fee2e2' : '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: a.severity === 'High' ? '#b91c1c' : '#b45309', flexShrink: 0 }}>
-                    <AlertTriangle size={16}/>
-                  </div>
-                  <div>
-                    <strong style={{ fontSize: '14px', color: '#1e293b' }}>{a.title}</strong>
-                    <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#64748b' }}>{a.body}</p>
-                  </div>
-                </div>
-                <span style={{ fontSize: '11px', fontWeight: '700', padding: '3px 10px', borderRadius: '999px', background: a.severity === 'High' ? '#fecaca' : '#fed7aa', color: a.severity === 'High' ? '#991b1b' : '#9a3412' }}>
-                  {a.severity}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     );
   };
 
   // ============================================================================
-  // REBUILT: WHAT-IF SIMULATOR TAB
+  // REBUILT: ANOMALIES TAB
   // ============================================================================
+
+  const renderAnomalies = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+        <div style={{ width: '64px', height: '64px', borderRadius: '16px', background: '#fef2f2', border: '1px solid #fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', flexShrink: 0 }}>
+          <AlertTriangle size={32}/>
+        </div>
+        <div>
+          <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#0f172a', margin: 0 }}>Anomaly & Outlier Detection</h3>
+          <p style={{ fontSize: '14px', color: '#64748b', margin: '6px 0 0 0', maxWidth: '700px', lineHeight: '1.5' }}>
+            Continuous algorithmic monitoring analyzes your financial records against historical baselines to flag irregular patterns, expense spikes, and collection delays before they become critical.
+          </p>
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '16px' }}>
+        {anomalies.map((a, i) => (
+          <div key={i} style={{ background: '#ffffff', border: `1px solid ${a.severity === 'High' ? '#fca5a5' : '#fcd34d'}`, borderRadius: '16px', padding: '24px', position: 'relative', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', background: a.severity === 'High' ? '#ef4444' : '#f59e0b' }}/>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: a.severity === 'High' ? '#fef2f2' : '#fffbeb', color: a.severity === 'High' ? '#ef4444' : '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <AlertTriangle size={16}/>
+                </div>
+                <strong style={{ fontSize: '15px', color: '#0f172a' }}>{a.title}</strong>
+              </div>
+              <span style={{ fontSize: '11px', fontWeight: '700', padding: '4px 10px', borderRadius: '999px', background: a.severity === 'High' ? '#fef2f2' : '#fffbeb', color: a.severity === 'High' ? '#991b1b' : '#9a3412', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {a.severity}
+              </span>
+            </div>
+            <p style={{ fontSize: '13px', color: '#475569', margin: 0, lineHeight: '1.5' }}>{a.body}</p>
+          </div>
+        ))}
+        
+        {anomalies.length === 0 && (
+           <div style={{ gridColumn: '1 / -1', padding: '40px', textAlign: 'center', color: '#64748b', background: '#f8fafc', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
+              <CheckCircle2 size={32} style={{ color: '#10b981', margin: '0 auto 12px auto' }}/>
+              <strong style={{ display: 'block', fontSize: '16px', color: '#0f172a' }}>All Clear</strong>
+              No significant anomalies detected in recent financial records.
+           </div>
+        )}
+      </div>
+    </div>
+  );
+
+  // ============================================================================
+  // REBUILT: AI RECOMMENDATIONS TAB
+  // ============================================================================
+
+  const renderRecommendations = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+        <div style={{ width: '64px', height: '64px', borderRadius: '16px', background: '#ecfdf5', border: '1px solid #d1fae5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#059669', flexShrink: 0 }}>
+          <Bot size={32}/>
+        </div>
+        <div>
+          <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#0f172a', margin: 0 }}>AI Financial Strategist</h3>
+          <p style={{ fontSize: '14px', color: '#64748b', margin: '6px 0 0 0', maxWidth: '700px', lineHeight: '1.5' }}>
+            Personalized, rule-based prescriptions generated by evaluating your liquidity buffers, debt exposure, and working capital cycles.
+          </p>
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '16px' }}>
+        {recommendations.map((r, i) => (
+          <div key={i} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: r.tone === 'green' ? '#ecfdf5' : r.tone === 'orange' ? '#fffbeb' : '#fef2f2', color: r.tone === 'green' ? '#059669' : r.tone === 'orange' ? '#d97706' : '#dc2626', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Sparkles size={20}/>
+                </div>
+                <span style={{ fontSize: '11px', fontWeight: '700', padding: '4px 10px', borderRadius: '999px', background: '#f1f5f9', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  {r.tone === 'green' ? 'Optimization' : r.tone === 'orange' ? 'Attention' : 'Urgent Action'}
+                </span>
+              </div>
+              <h4 style={{ fontSize: '16px', fontWeight: '700', color: '#0f172a', margin: '0 0 8px 0' }}>{r.title}</h4>
+              <p style={{ fontSize: '13px', color: '#475569', margin: 0, lineHeight: '1.5' }}>{r.body}</p>
+            </div>
+            <button 
+              onClick={() => go('What-If Simulator')}
+              style={{ marginTop: '20px', padding: '10px 16px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '13px', fontWeight: '600', color: '#0f172a', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', transition: 'all 0.2s' }}
+              onMouseOver={(e) => e.currentTarget.style.background = '#f1f5f9'}
+              onMouseOut={(e) => e.currentTarget.style.background = '#f8fafc'}
+            >
+              Test in Simulator <TrendingUp size={14} style={{ color: '#059669' }}/>
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  // ============================================================================
+  // REBUILT: REPORTS TAB
+  // ============================================================================
+
+  const renderReports = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center' }}>
+      
+      {/* Action Bar */}
+      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', maxWidth: '900px' }}>
+        <div>
+          <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#0f172a', margin: 0 }}>Executive Reporting</h3>
+          <p style={{ fontSize: '13px', color: '#64748b', margin: '4px 0 0 0' }}>Generate, print, and export financial summaries.</p>
+        </div>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button className="ghost-btn" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px' }}>
+            <Download size={16}/> CSV Export
+          </button>
+          <button className="primary-btn" onClick={()=>window.print()} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: '#0d8b62', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
+            <Upload size={16}/> Print / PDF
+          </button>
+        </div>
+      </div>
+
+      {/* Document Preview Layout */}
+      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '48px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.05)', maxWidth: '900px', width: '100%' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #f1f5f9', paddingBottom: '24px', marginBottom: '32px' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#059669', marginBottom: '12px' }}>
+              <Activity size={24}/>
+              <span style={{ fontSize: '20px', fontWeight: '800', letterSpacing: '-0.02em' }}>VyaparAI</span>
+            </div>
+            <h2 style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a', margin: 0 }}>Financial Summary</h2>
+          </div>
+          <div style={{ textAlign: 'right', color: '#64748b', fontSize: '13px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <strong style={{ color: '#0f172a', fontSize: '16px' }}>{business.name || 'Workspace'}</strong>
+            <span>{business.industry || 'General Business'}</span>
+            <span>Generated: {new Date().toLocaleDateString()}</span>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '48px', marginBottom: '40px' }}>
+          <div>
+            <h4 style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8', margin: '0 0 12px 0' }}>Key Performance Indicators</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed #e2e8f0', paddingBottom: '8px' }}>
+                <span style={{ color: '#475569', fontSize: '14px' }}>Health Score</span>
+                <strong style={{ color: '#0f172a' }}>{health}/100</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed #e2e8f0', paddingBottom: '8px' }}>
+                <span style={{ color: '#475569', fontSize: '14px' }}>Risk Assessment</span>
+                <strong style={{ color: risk === 'LOW' ? '#059669' : '#dc2626' }}>{risk}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed #e2e8f0', paddingBottom: '8px' }}>
+                <span style={{ color: '#475569', fontSize: '14px' }}>Records Analyzed</span>
+                <strong style={{ color: '#0f172a' }}>{records.length} Months</strong>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h4 style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8', margin: '0 0 12px 0' }}>Latest Period Financials</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed #e2e8f0', paddingBottom: '8px' }}>
+                <span style={{ color: '#475569', fontSize: '14px' }}>Total Revenue</span>
+                <strong style={{ color: '#0f172a' }}>{currency(current?.revenue || 0)}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed #e2e8f0', paddingBottom: '8px' }}>
+                <span style={{ color: '#475569', fontSize: '14px' }}>Net Profit</span>
+                <strong style={{ color: '#0f172a' }}>{currency(profit)}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed #e2e8f0', paddingBottom: '8px' }}>
+                <span style={{ color: '#475569', fontSize: '14px' }}>Cash Balance</span>
+                <strong style={{ color: '#0f172a' }}>{currency(current?.cashBalance || 0)}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ background: '#f8fafc', padding: '20px', borderRadius: '12px', fontSize: '12px', color: '#64748b', lineHeight: '1.6' }}>
+          <strong>System Note:</strong> This document is automatically generated by the VyaparAI intelligence engine based on user-provided financial records. Information is for internal diagnostic purposes only and does not constitute formal accounting advice.
+        </div>
+      </div>
+    </div>
+  );
 
   const renderSimulator = () => {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-        {/* Header copy */}
         <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ background: '#ecfdf5', padding: '8px', borderRadius: '10px', color: '#047857' }}>
@@ -1074,15 +1161,12 @@ function Workspace() {
           </div>
         </div>
 
-        {/* 2-Column Interactive Workspace */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '24px' }}>
-          {/* Levers Controls */}
           <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '28px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <h4 style={{ fontSize: '16px', fontWeight: '700', color: '#1e293b', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Sliders size={16} style={{ color: '#047857' }}/> Adjust Operational Levers
             </h4>
 
-            {/* Slider 1: Revenue */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '13px', fontWeight: '600', color: '#334155' }}>Projected Revenue Change</span>
@@ -1090,23 +1174,9 @@ function Workspace() {
                   {simRevenue >= 0 ? '+' : ''}{simRevenue}%
                 </span>
               </div>
-              <input 
-                type="range" 
-                min="-50" 
-                max="50" 
-                step="1" 
-                value={simRevenue} 
-                onChange={(e) => setSimRevenue(Number(e.target.value))}
-                style={{ width: '100%', accentColor: '#0d8b62', cursor: 'pointer' }}
-              />
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#94a3b8' }}>
-                <span>-50% downturn</span>
-                <span>0%</span>
-                <span>+50% expansion</span>
-              </div>
+              <input type="range" min="-50" max="50" step="1" value={simRevenue} onChange={(e) => setSimRevenue(Number(e.target.value))} style={{ width: '100%', accentColor: '#0d8b62', cursor: 'pointer' }}/>
             </div>
 
-            {/* Slider 2: Expenses */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '13px', fontWeight: '600', color: '#334155' }}>Operating Expense Variance</span>
@@ -1114,23 +1184,9 @@ function Workspace() {
                   {simExpense >= 0 ? '+' : ''}{simExpense}%
                 </span>
               </div>
-              <input 
-                type="range" 
-                min="-50" 
-                max="50" 
-                step="1" 
-                value={simExpense} 
-                onChange={(e) => setSimExpense(Number(e.target.value))}
-                style={{ width: '100%', accentColor: '#0d8b62', cursor: 'pointer' }}
-              />
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#94a3b8' }}>
-                <span>-50% cost cutting</span>
-                <span>0%</span>
-                <span>+50% cost surge</span>
-              </div>
+              <input type="range" min="-50" max="50" step="1" value={simExpense} onChange={(e) => setSimExpense(Number(e.target.value))} style={{ width: '100%', accentColor: '#0d8b62', cursor: 'pointer' }}/>
             </div>
 
-            {/* Slider 3: Collections */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '13px', fontWeight: '600', color: '#334155' }}>Expedited AR Collections</span>
@@ -1138,28 +1194,10 @@ function Workspace() {
                   +{simCollections}%
                 </span>
               </div>
-              <input 
-                type="range" 
-                min="0" 
-                max="40" 
-                step="1" 
-                value={simCollections} 
-                onChange={(e) => setSimCollections(Number(e.target.value))}
-                style={{ width: '100%', accentColor: '#0d8b62', cursor: 'pointer' }}
-              />
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#94a3b8' }}>
-                <span>Baseline</span>
-                <span>+20% collected</span>
-                <span>+40% accelerated</span>
-              </div>
-            </div>
-
-            <div style={{ background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: '10px', padding: '12px 14px', fontSize: '12px', color: '#475569' }}>
-              <strong>Applied Hypothesis:</strong> Revenue {simRevenue >= 0 ? '+' : ''}{simRevenue}%, Expenses {simExpense >= 0 ? '+' : ''}{simExpense}%, Receivables Recovery +{simCollections}%.
+              <input type="range" min="0" max="40" step="1" value={simCollections} onChange={(e) => setSimCollections(Number(e.target.value))} style={{ width: '100%', accentColor: '#0d8b62', cursor: 'pointer' }}/>
             </div>
           </div>
 
-          {/* Simulated Outputs & Comparison */}
           <div style={{ background: '#042f24', color: '#ffffff', borderRadius: '16px', padding: '28px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxShadow: '0 4px 12px rgba(4,47,36,0.15)' }}>
             <div>
               <span style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '0.06em', color: '#6ee7b7', textTransform: 'uppercase' }}>
@@ -1176,21 +1214,18 @@ function Workspace() {
                     {simulator.health} <span style={{ fontSize: '14px', color: '#6ee7b7' }}>/100</span>
                   </div>
                 </div>
-
                 <div style={{ background: 'rgba(255,255,255,0.06)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
                   <span style={{ fontSize: '12px', color: '#a7f3d0' }}>Simulated Risk</span>
                   <div style={{ fontSize: '24px', fontWeight: '800', color: simulator.risk === 'LOW' ? '#6ee7b7' : '#fcd34d', marginTop: '6px' }}>
                     {simulator.risk}
                   </div>
                 </div>
-
                 <div style={{ background: 'rgba(255,255,255,0.06)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
                   <span style={{ fontSize: '12px', color: '#a7f3d0' }}>Projected Cash</span>
                   <div style={{ fontSize: '20px', fontWeight: '700', color: '#ffffff', marginTop: '4px' }}>
                     {currency(simulator.cash)}
                   </div>
                 </div>
-
                 <div style={{ background: 'rgba(255,255,255,0.06)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
                   <span style={{ fontSize: '12px', color: '#a7f3d0' }}>Estimated Profit</span>
                   <div style={{ fontSize: '20px', fontWeight: '700', color: '#ffffff', marginTop: '4px' }}>
@@ -1200,7 +1235,6 @@ function Workspace() {
               </div>
             </div>
 
-            {/* Side-by-side transition preview */}
             <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
                 <span style={{ fontSize: '11px', color: '#a7f3d0' }}>Current Health</span>
@@ -1223,10 +1257,6 @@ function Workspace() {
       </div>
     );
   };
-
-  // ============================================================================
-  // OTHER TABS (DATA ENTRY, CASH FLOW, REPORTS)
-  // ============================================================================
 
   const renderDataEntry = () => {
     return (
@@ -1409,102 +1439,6 @@ function Workspace() {
     </section>
   );
 
-  const renderAnomalies = () => (
-    <section className="page-grid-single">
-      <div className="panel">
-        <div className="panel-header">
-          <div>
-            <h3>Detected anomalies</h3>
-            <p>Prototype thresholds based on changes between saved records.</p>
-          </div>
-        </div>
-        {anomalies.map((a,i) => (
-          <div className="alert-card" key={i}>
-            <div className={`severity-dot ${a.severity==='High'?'red':'orange'}`}/>
-            <div>
-              <strong>{a.title}</strong>
-              <small>{a.body}</small>
-            </div>
-            <span>{a.severity}</span>
-          </div>
-        ))}
-      </div>
-      <div className="panel info-panel">
-        <Upload size={18}/>
-        <div>
-          <h3>More powerful anomaly detection</h3>
-          <p>Once your backend is connected, this section can use Isolation Forest on transaction-level data to identify unusual payments, expense spikes and cash withdrawals.</p>
-        </div>
-      </div>
-    </section>
-  );
-
-  const renderRecommendations = () => (
-    <section className="page-grid-single">
-      <div className="panel">
-        <div className="panel-header">
-          <div>
-            <h3>AI recommendations</h3>
-            <p>Rules-based prototype recommendations calculated from your current records.</p>
-          </div>
-          <div className="ai-chip"><Bot size={14}/> AI</div>
-        </div>
-        {recommendations.map((r,i) => (
-          <div className="recommendation wide" key={i}>
-            <div className={`rec-icon ${r.tone==='green'?'green-bg':r.tone==='red'?'red-bg':''}`}>
-              <Sparkles size={15}/>
-            </div>
-            <div>
-              <strong>{r.title}</strong>
-              <small>{r.body}</small>
-            </div>
-            <span className={`recommendation-tag ${r.tone}`}>{r.tone}</span>
-          </div>
-        ))}
-      </div>
-      <div className="bottom-note">
-        <ShieldAlert size={13}/> Recommendations are decision-support suggestions, not professional financial advice.
-      </div>
-    </section>
-  );
-
-  const renderReports = () => (
-    <section className="page-grid-single">
-      <div className="panel">
-        <div className="panel-header">
-          <div>
-            <h3>Reports</h3>
-            <p>Quick snapshot based on your saved data.</p>
-          </div>
-          <button className="primary-btn" onClick={()=>window.print()}>
-            <Upload size={15}/> Print / Save PDF
-          </button>
-        </div>
-        <div className="report-grid">
-          <div><span>Business</span><strong>{business.name}</strong></div>
-          <div><span>Health</span><strong>{health}/100</strong></div>
-          <div><span>Risk</span><strong>{risk}</strong></div>
-          <div><span>Revenue</span><strong>{currency(current?.revenue || 0)}</strong></div>
-          <div><span>Profit</span><strong>{currency(profit)}</strong></div>
-          <div><span>Cash</span><strong>{currency(current?.cashBalance || 0)}</strong></div>
-          <div><span>Receivables</span><strong>{currency(current?.receivables || 0)}</strong></div>
-          <div><span>Debt</span><strong>{currency(current?.loanOutstanding || 0)}</strong></div>
-        </div>
-      </div>
-      <div className="panel">
-        <div className="panel-header">
-          <div>
-            <h3>Notes</h3>
-            <p>Report details</p>
-          </div>
-        </div>
-        <p className="report-note">
-          This report reflects the financial records currently saved in your connected workspace.
-        </p>
-      </div>
-    </section>
-  );
-
   const page = activeNav === 'Overview' ? renderOverview()
     : activeNav === 'Data Entry' ? renderDataEntry()
     : activeNav === 'Financial Health' ? renderHealth()
@@ -1524,7 +1458,6 @@ function Workspace() {
       className="app-shell" 
       style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}
     >
-      {/* SIDEBAR */}
       <aside 
         className={`sidebar ${sidebarOpen ? 'expanded' : 'collapsed'} ${mobileOpen ? 'mobile-visible' : ''}`}
         style={{ 
@@ -1633,7 +1566,6 @@ function Workspace() {
         />
       )}
       
-      {/* MAIN CONTAINER */}
       <main 
         className="main-shell" 
         style={{ flex: 1, height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}
